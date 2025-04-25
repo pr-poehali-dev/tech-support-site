@@ -1,27 +1,13 @@
 
 import React from 'react';
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Skin } from "@/types/cases";
 
-interface SkinCardProps {
-  id: string;
-  name: string;
-  image: string;
-  price: number;
-  rarity: 'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary' | 'ancient';
-  wear?: string;
+interface SkinCardProps extends Skin {
+  onClick?: () => void;
   className?: string;
-  onClick?: (id: string) => void;
 }
-
-const rarityClasses = {
-  common: 'border-gray-400 bg-gradient-to-b from-gray-700/50 to-gray-800/50',
-  uncommon: 'border-blue-400 bg-gradient-to-b from-blue-700/50 to-blue-800/50',
-  rare: 'border-purple-400 bg-gradient-to-b from-purple-700/50 to-purple-800/50',
-  mythical: 'border-pink-400 bg-gradient-to-b from-pink-700/50 to-pink-800/50',
-  legendary: 'border-red-400 bg-gradient-to-b from-red-600/50 to-red-700/50',
-  ancient: 'border-yellow-400 bg-gradient-to-b from-yellow-600/50 to-yellow-700/50',
-};
 
 export function SkinCard({ 
   id, 
@@ -29,47 +15,63 @@ export function SkinCard({
   image, 
   price, 
   rarity,
-  wear,
-  className,
-  onClick
+  condition,
+  onClick,
+  className
 }: SkinCardProps) {
-  // Format price to Russian ruble
-  const formattedPrice = new Intl.NumberFormat('ru-RU', { 
-    style: 'currency', 
+  // Определяем класс для фона в зависимости от редкости
+  const rarityClasses = {
+    'common': 'bg-gradient-to-b from-gray-700 to-gray-800 border-gray-600',
+    'uncommon': 'bg-gradient-to-b from-blue-700 to-blue-800 border-blue-600',
+    'rare': 'bg-gradient-to-b from-purple-700 to-purple-800 border-purple-600',
+    'mythical': 'bg-gradient-to-b from-pink-700 to-pink-800 border-pink-600',
+    'legendary': 'bg-gradient-to-b from-[#D4AF37] to-[#AA8C2C] border-yellow-600',
+    'ancient': 'bg-gradient-to-b from-red-700 to-red-800 border-red-600'
+  };
+  
+  // Форматирование цены
+  const formattedPrice = new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
     currency: 'RUB',
     maximumFractionDigits: 0
   }).format(price);
-  
+
   return (
     <Card 
       className={cn(
-        'group relative overflow-hidden transition-all duration-200 border-2',
-        rarityClasses[rarity],
-        onClick ? 'cursor-pointer hover:scale-105' : '',
+        "w-full cursor-pointer transition-all duration-200 border-2 overflow-hidden",
+        rarityClasses[rarity as keyof typeof rarityClasses],
+        "hover:scale-[1.03] hover:shadow-lg hover:shadow-black/30",
+        onClick && "hover:shadow-md",
         className
       )}
-      onClick={() => onClick && onClick(id)}
+      onClick={onClick}
     >
-      <div className="p-2 h-full flex flex-col">
-        <div className="flex-1 bg-black/30 rounded-sm flex items-center justify-center p-2">
+      <CardContent className="p-2">
+        <div className="aspect-square rounded bg-black/20 flex items-center justify-center mb-2 overflow-hidden">
           <img 
             src={image} 
             alt={name} 
-            className="max-h-24 max-w-full object-contain transition-transform duration-300 group-hover:scale-110"
+            className="w-full h-auto object-contain transform transition-transform hover:scale-110 duration-300"
           />
         </div>
         
-        <div className="mt-2 text-center">
-          <p className="text-xs truncate text-white">
+        <div className="space-y-1">
+          <h3 className="text-sm font-medium text-white truncate" title={name}>
             {name}
-            {wear && <span className="text-gray-400 ml-1">({wear})</span>}
+          </h3>
+          
+          {condition && (
+            <p className="text-xs text-gray-300 truncate">
+              {condition}
+            </p>
+          )}
+          
+          <p className="text-sm font-bold text-white">
+            {formattedPrice}
           </p>
-          <p className="text-sm font-bold text-white">{formattedPrice}</p>
         </div>
-      </div>
-      
-      {/* Shine effect on hover */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-30 bg-gradient-to-r from-transparent via-white to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-700 ease-out pointer-events-none"></div>
+      </CardContent>
     </Card>
   );
 }

@@ -30,7 +30,7 @@ export function CaseOpeningAnimation({
   const [animationItems, setAnimationItems] = useState<Skin[]>([]);
   const [winningPosition, setWinningPosition] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
-  const targetRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Generate enough items to fill the animation (with repeats)
   const generateItems = () => {
@@ -70,23 +70,29 @@ export function CaseOpeningAnimation({
     
     const winner = items[winningPosition];
     
-    if (sliderRef.current) {
-      // Set up the initial position
+    if (sliderRef.current && containerRef.current) {
+      // Получаем ширину контейнера
+      const containerWidth = containerRef.current.clientWidth;
+      
+      // Установка начальной позиции (все элементы справа)
       sliderRef.current.style.transition = 'none';
-      sliderRef.current.style.transform = 'translateX(0)';
+      sliderRef.current.style.transform = 'translateX(' + containerWidth + 'px)';
       
       // Force a reflow
       void sliderRef.current.offsetWidth;
       
-      // Calculate the target position (centered on the winning item)
-      const itemWidth = 160; // Width of each item + margin
-      const targetPosition = -(winningPosition * itemWidth) + (window.innerWidth / 2) - (itemWidth / 2);
+      // Рассчитываем ширину одного элемента
+      const itemWidth = 160; // Ширина каждого элемента + отступы
       
-      // Start the animation
-      sliderRef.current.style.transition = 'transform 5s cubic-bezier(0.3, 0.1, 0.3, 1)';
+      // Рассчитываем целевую позицию (выигрышный элемент должен остановиться в центре)
+      const totalDistance = containerWidth + (items.length * itemWidth);
+      const targetPosition = -((winningPosition * itemWidth) - (containerWidth / 2) + (itemWidth / 2));
+      
+      // Запускаем анимацию
+      sliderRef.current.style.transition = 'transform 5s cubic-bezier(0.15, 0.41, 0.23, 0.97)';
       sliderRef.current.style.transform = `translateX(${targetPosition}px)`;
       
-      // Set the final item after animation completes
+      // Устанавливаем финальный предмет после завершения анимации
       setTimeout(() => {
         setIsAnimating(false);
         setFinalItem(winner);
@@ -112,9 +118,11 @@ export function CaseOpeningAnimation({
         <div className="p-4 border-b border-gray-700">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold text-white">Открытие кейса: {caseName}</h2>
-            <Button variant="ghost" onClick={onClose} className="text-gray-400 hover:text-white">
-              ✕
-            </Button>
+            {finalItem && (
+              <Button variant="ghost" onClick={onClose} className="text-gray-400 hover:text-white">
+                ✕
+              </Button>
+            )}
           </div>
         </div>
         
@@ -130,20 +138,23 @@ export function CaseOpeningAnimation({
               </Button>
             </div>
           ) : (
-            <div className="relative h-64 overflow-hidden">
-              {/* Central marker */}
-              <div 
-                className="absolute top-0 left-1/2 h-full w-0.5 bg-[#9b87f5] z-10"
-                ref={targetRef}
-              />
+            <div className="relative h-64 overflow-hidden" ref={containerRef}>
+              {/* Центральный маркер */}
+              <div className="absolute top-0 left-1/2 h-full w-0.5 bg-[#9b87f5] z-10" />
               
-              {/* Items slider */}
+              {/* Слайдер с предметами */}
               <div 
                 ref={sliderRef} 
                 className="flex items-center absolute left-0 top-1/2 -translate-y-1/2 will-change-transform"
               >
                 {animationItems.map((item, index) => (
-                  <div key={`${item.id}-${index}`} className="mx-2 flex-shrink-0 w-36">
+                  <div 
+                    key={`${item.id}-${index}`} 
+                    className={cn(
+                      "mx-2 flex-shrink-0 w-36",
+                      index === winningPosition && "scale-110 z-10"
+                    )}
+                  >
                     <SkinCard {...item} />
                   </div>
                 ))}
@@ -151,7 +162,7 @@ export function CaseOpeningAnimation({
             </div>
           )}
           
-          {/* Result display */}
+          {/* Отображение результата */}
           {finalItem && (
             <div className="mt-6 flex flex-col items-center gap-4 animate-fade-in">
               <h3 className="text-xl font-bold text-white">Поздравляем!</h3>
