@@ -32,6 +32,14 @@ export function MainNav() {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
+                  <Link to="/cases" className={cn(
+                    navigationMenuTriggerStyle(),
+                    "bg-transparent text-white hover:bg-[#222632] hover:text-[#9b87f5]"
+                  )}>
+                    Кейсы CS:GO
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
                   <Link to="/crash" className={cn(
                     navigationMenuTriggerStyle(),
                     "bg-transparent text-white hover:bg-[#222632] hover:text-[#9b87f5]"
@@ -85,6 +93,13 @@ export function MainNav() {
       {mobileMenuOpen && (
         <div className="md:hidden p-4 bg-[#222632] border-b border-[#333]">
           <nav className="space-y-4">
+            <Link 
+              to="/cases"
+              className="block p-2 text-white hover:text-[#9b87f5]"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Кейсы CS:GO
+            </Link>
             <Link 
               to="/crash"
               className="block p-2 text-white hover:text-[#9b87f5]"

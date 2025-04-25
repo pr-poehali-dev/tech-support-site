@@ -18,7 +18,7 @@ const Index = () => {
               Испытай удачу на <span className="text-[#9b87f5]">GamingCase</span>
             </h1>
             <p className="text-xl mb-8 text-gray-300">
-              Играй в Crash и Upgrade режимах, выигрывай лучшие скины и получай мгновенную поддержку!
+              Открывай кейсы CS:GO, играй в Crash и Upgrade режимах, выигрывай лучшие скины и получай мгновенную поддержку!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg">
@@ -36,7 +36,15 @@ const Index = () => {
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold mb-12 text-center text-white">Выбери свой режим игры</h2>
             
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-3 gap-8">
+              <GameCard 
+                title="Кейсы CS:GO" 
+                description="Открывай кейсы и получай редкие скины разной стоимости с невероятными шансами на выигрыш!"
+                image="https://images.unsplash.com/photo-1559583109-3e7968136c99?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                buttonText="Открыть кейсы"
+                link="/cases"
+              />
+              
               <GameCard 
                 title="Crash" 
                 description="Поставь свои скины и деньги, определи момент выхода и забери выигрыш до краха графика!"

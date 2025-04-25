@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import CrashPage from "./pages/CrashPage";
 import UpgradePage from "./pages/UpgradePage";
 import SupportPage from "./pages/SupportPage";
+import CasesPage from "./pages/CasesPage";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/cases" element={<CasesPage />} />
           <Route path="/crash" element={<CrashPage />} />
           <Route path="/upgrade" element={<UpgradePage />} />
           <Route path="/support" element={<SupportPage />} />
