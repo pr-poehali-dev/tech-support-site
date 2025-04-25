@@ -3,15 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { SkinCard } from "@/components/SkinCard";
 import { cn } from "@/lib/utils";
-
-interface Skin {
-  id: string;
-  name: string;
-  image: string;
-  price: number;
-  rarity: 'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary' | 'ancient';
-  wear?: string;
-}
+import { Skin } from "@/types/cases";
 
 interface CaseOpeningAnimationProps {
   isOpen: boolean;
@@ -35,6 +27,8 @@ export function CaseOpeningAnimation({
   const [isAnimating, setIsAnimating] = useState(false);
   const [finalItem, setFinalItem] = useState<Skin | null>(null);
   const [animationStarted, setAnimationStarted] = useState(false);
+  const [animationItems, setAnimationItems] = useState<Skin[]>([]);
+  const [winningPosition, setWinningPosition] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
   
@@ -48,10 +42,10 @@ export function CaseOpeningAnimation({
       : Math.floor(Math.random() * possibleItems.length);
     
     // Winning item should appear near the end of the animation
-    const winningPosition = Math.floor(totalItems * 0.8); // 80% through the animation
+    const winningPos = Math.floor(totalItems * 0.8); // 80% through the animation
     
     for (let i = 0; i < totalItems; i++) {
-      if (i === winningPosition) {
+      if (i === winningPos) {
         items.push(possibleItems[winIndex]);
       } else {
         // Random items from the possible items
@@ -60,7 +54,7 @@ export function CaseOpeningAnimation({
       }
     }
     
-    return { items, winningPosition };
+    return { items, winningPosition: winningPos };
   };
 
   const startAnimation = () => {
@@ -71,6 +65,9 @@ export function CaseOpeningAnimation({
     setFinalItem(null);
     
     const { items, winningPosition } = generateItems();
+    setAnimationItems(items);
+    setWinningPosition(winningPosition);
+    
     const winner = items[winningPosition];
     
     if (sliderRef.current) {
@@ -145,8 +142,8 @@ export function CaseOpeningAnimation({
                 ref={sliderRef} 
                 className="flex items-center absolute left-0 top-1/2 -translate-y-1/2 will-change-transform"
               >
-                {generateItems().items.map((item, index) => (
-                  <div key={index} className="mx-2 flex-shrink-0 w-36">
+                {animationItems.map((item, index) => (
+                  <div key={`${item.id}-${index}`} className="mx-2 flex-shrink-0 w-36">
                     <SkinCard {...item} />
                   </div>
                 ))}

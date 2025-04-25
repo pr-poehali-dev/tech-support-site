@@ -1,12 +1,10 @@
 
-export type RarityType = 'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary' | 'ancient';
-
 export interface Skin {
   id: string;
   name: string;
   image: string;
   price: number;
-  rarity: RarityType;
+  rarity: 'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary' | 'ancient';
   wear?: string;
 }
 
@@ -15,9 +13,15 @@ export interface Case {
   name: string;
   image: string;
   price: number;
+  category: string;
+  description?: string;
   items: Skin[];
-  bestDrop: string;
-  bestDropImage: string;
-  rarityColor: string;
-  category: 'popular' | 'new' | 'special';
+}
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  balance: number;
+  inventory: Skin[];
 }

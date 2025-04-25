@@ -1,80 +1,75 @@
 
 import React from 'react';
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-type RarityType = 'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary' | 'ancient';
-
 interface SkinCardProps {
+  id: string;
   name: string;
   image: string;
   price: number;
-  rarity: RarityType;
+  rarity: 'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary' | 'ancient';
   wear?: string;
   className?: string;
+  onClick?: (id: string) => void;
 }
 
-const rarityColors: Record<RarityType, string> = {
-  common: 'border-gray-400 bg-gray-400/10',
-  uncommon: 'border-blue-400 bg-blue-400/10',
-  rare: 'border-purple-400 bg-purple-400/10',
-  mythical: 'border-pink-400 bg-pink-400/10',
-  legendary: 'border-red-400 bg-red-400/10',
-  ancient: 'border-yellow-400 bg-yellow-400/10',
-};
-
-const rarityGlows: Record<RarityType, string> = {
-  common: '',
-  uncommon: 'shadow-sm shadow-blue-400/20',
-  rare: 'shadow-sm shadow-purple-400/20',
-  mythical: 'shadow-md shadow-pink-400/30',
-  legendary: 'shadow-md shadow-red-400/40',
-  ancient: 'shadow-lg shadow-yellow-400/50',
+const rarityClasses = {
+  common: 'border-gray-400 bg-gradient-to-b from-gray-700/50 to-gray-800/50',
+  uncommon: 'border-blue-400 bg-gradient-to-b from-blue-700/50 to-blue-800/50',
+  rare: 'border-purple-400 bg-gradient-to-b from-purple-700/50 to-purple-800/50',
+  mythical: 'border-pink-400 bg-gradient-to-b from-pink-700/50 to-pink-800/50',
+  legendary: 'border-red-400 bg-gradient-to-b from-red-600/50 to-red-700/50',
+  ancient: 'border-yellow-400 bg-gradient-to-b from-yellow-600/50 to-yellow-700/50',
 };
 
 export function SkinCard({ 
+  id, 
   name, 
   image, 
   price, 
-  rarity, 
-  wear = 'Factory New', 
-  className 
+  rarity,
+  wear,
+  className,
+  onClick
 }: SkinCardProps) {
+  // Format price to Russian ruble
+  const formattedPrice = new Intl.NumberFormat('ru-RU', { 
+    style: 'currency', 
+    currency: 'RUB',
+    maximumFractionDigits: 0
+  }).format(price);
+  
   return (
-    <div className={cn(
-      'relative overflow-hidden rounded-lg border-2 transition-all duration-300 hover:scale-105',
-      rarityColors[rarity],
-      rarityGlows[rarity],
-      className
-    )}>
-      <div className="p-3 bg-[#1A1F2C]/80 h-full flex flex-col">
-        <div className="relative aspect-square rounded overflow-hidden mb-2">
+    <Card 
+      className={cn(
+        'group relative overflow-hidden transition-all duration-200 border-2',
+        rarityClasses[rarity],
+        onClick ? 'cursor-pointer hover:scale-105' : '',
+        className
+      )}
+      onClick={() => onClick && onClick(id)}
+    >
+      <div className="p-2 h-full flex flex-col">
+        <div className="flex-1 bg-black/30 rounded-sm flex items-center justify-center p-2">
           <img 
             src={image} 
             alt={name} 
-            className="w-full h-full object-cover"
+            className="max-h-24 max-w-full object-contain transition-transform duration-300 group-hover:scale-110"
           />
         </div>
         
-        <div className="flex-1">
-          <h3 className="text-sm font-medium text-white truncate">{name}</h3>
-          <p className="text-xs text-gray-400">{wear}</p>
-        </div>
-        
-        <div className="mt-2 flex justify-between items-center">
-          <span className="text-sm font-bold text-white">${price.toFixed(2)}</span>
-          <span className={cn(
-            'text-xs px-2 py-0.5 rounded',
-            rarity === 'common' ? 'bg-gray-600 text-gray-200' :
-            rarity === 'uncommon' ? 'bg-blue-600 text-blue-100' :
-            rarity === 'rare' ? 'bg-purple-600 text-purple-100' :
-            rarity === 'mythical' ? 'bg-pink-600 text-pink-100' :
-            rarity === 'legendary' ? 'bg-red-600 text-red-100' :
-            'bg-yellow-600 text-yellow-100'
-          )}>
-            {rarity.charAt(0).toUpperCase() + rarity.slice(1)}
-          </span>
+        <div className="mt-2 text-center">
+          <p className="text-xs truncate text-white">
+            {name}
+            {wear && <span className="text-gray-400 ml-1">({wear})</span>}
+          </p>
+          <p className="text-sm font-bold text-white">{formattedPrice}</p>
         </div>
       </div>
-    </div>
+      
+      {/* Shine effect on hover */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-30 bg-gradient-to-r from-transparent via-white to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-700 ease-out pointer-events-none"></div>
+    </Card>
   );
 }

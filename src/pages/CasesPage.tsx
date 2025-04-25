@@ -7,6 +7,7 @@ import { CasesHeader } from "@/components/case/CasesHeader";
 import { CasesTabs } from "@/components/case/CasesTabs";
 import { cases } from "@/data/casesData";
 import { useCaseOpening } from "@/hooks/useCaseOpening";
+import { useAuth } from "@/hooks/useAuth";
 
 const CasesPage = () => {
   const {
@@ -16,6 +17,8 @@ const CasesPage = () => {
     handleCloseAnimation,
     handleComplete
   } = useCaseOpening();
+  
+  const { currentUser } = useAuth();
   
   // Создаем обертку для передачи cases в handleOpenCase
   const handleOpenCase = (caseId: string) => {
