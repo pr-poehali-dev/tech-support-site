@@ -12,11 +12,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { InventoryModal } from "@/components/inventory/InventoryModal";
 import { useToast } from "@/components/ui/use-toast";
+import { useCaseOpening } from "@/hooks/useCaseOpening";
 
 const CasesPage = () => {
   const [activeTab, setActiveTab] = useState("popular");
-  const [selectedCase, setSelectedCase] = useState<Case | null>(null);
-  const [isOpeningCase, setIsOpeningCase] = useState(false);
   const { toast } = useToast();
   
   const { 
@@ -31,26 +30,13 @@ const CasesPage = () => {
     addItemToInventory
   } = useAuth();
 
-  const handleOpenCase = (caseItem: Case) => {
-    if (!currentUser) {
-      openAuthModal();
-      return;
-    }
-    
-    setSelectedCase(caseItem);
-    setIsOpeningCase(true);
-  };
-
-  const handleCaseOpeningComplete = (item: Skin) => {
-    toast({
-      title: "Поздравляем!",
-      description: `Вы получили ${item.name} стоимостью ${item.price.toLocaleString('ru-RU')} ₽`,
-    });
-    
-    if (currentUser) {
-      addItemToInventory(item);
-    }
-  };
+  const {
+    selectedCase,
+    openAnimationModal,
+    handleOpenCase,
+    handleCloseAnimation,
+    handleComplete
+  } = useCaseOpening();
 
   return (
     <div className="min-h-screen flex flex-col bg-[#1A1F2C]">
@@ -64,15 +50,24 @@ const CasesPage = () => {
           
           <div className="mt-8">
             {activeTab === "popular" && (
-              <CasesTabContent cases={casesData.popularCases} onOpenCase={handleOpenCase} />
+              <CasesTabContent 
+                cases={casesData.popularCases} 
+                onOpenCase={(caseItem) => handleOpenCase(caseItem.id, casesData.allCases)} 
+              />
             )}
             
             {activeTab === "new" && (
-              <CasesTabContent cases={casesData.newCases} onOpenCase={handleOpenCase} />
+              <CasesTabContent 
+                cases={casesData.newCases} 
+                onOpenCase={(caseItem) => handleOpenCase(caseItem.id, casesData.allCases)} 
+              />
             )}
             
             {activeTab === "special" && (
-              <CasesTabContent cases={casesData.specialCases} onOpenCase={handleOpenCase} />
+              <CasesTabContent 
+                cases={casesData.specialCases} 
+                onOpenCase={(caseItem) => handleOpenCase(caseItem.id, casesData.allCases)} 
+              />
             )}
           </div>
         </div>
@@ -95,13 +90,13 @@ const CasesPage = () => {
       
       {selectedCase && (
         <CaseOpeningAnimation
-          isOpen={isOpeningCase}
-          onClose={() => setIsOpeningCase(false)}
+          isOpen={openAnimationModal}
+          onClose={handleCloseAnimation}
           caseName={selectedCase.name}
           caseImage={selectedCase.image}
           casePrice={selectedCase.price}
-          possibleItems={selectedCase.possibleItems}
-          onComplete={handleCaseOpeningComplete}
+          possibleItems={selectedCase.items}
+          onComplete={handleComplete}
         />
       )}
     </div>

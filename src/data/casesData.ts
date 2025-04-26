@@ -154,3 +154,13 @@ export const cases: Case[] = [
     category: 'special'
   }
 ];
+
+// Группировка кейсов по категориям для упрощения использования
+export const casesData = {
+  popularCases: cases.filter(c => c.category === 'popular'),
+  newCases: cases.filter(c => c.category === 'new'),
+  specialCases: cases.filter(c => c.category === 'special'),
+  allCases: cases
+};
+
+export default casesData;
