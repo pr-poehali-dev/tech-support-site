@@ -6,7 +6,7 @@ import { CasesHeader } from "@/components/case/CasesHeader";
 import { CasesTabs } from "@/components/case/CasesTabs";
 import { CasesTabContent } from "@/components/case/CasesTabContent";
 import { CaseOpeningAnimation } from "@/components/CaseOpeningAnimation";
-import { casesData } from "@/data/casesData";
+import { cases } from "@/data/casesData";
 import { Case, Skin } from "@/types/cases";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -38,6 +38,23 @@ const CasesPage = () => {
     handleComplete
   } = useCaseOpening();
 
+  if (!cases || !Array.isArray(cases)) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#1A1F2C]">
+        <MainNav />
+        <div className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
+          <p className="text-white text-xl">Ошибка загрузки данных. Пожалуйста, обновите страницу.</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Фильтруем кейсы по категориям
+  const popularCases = cases.filter(c => c.category === "popular");
+  const newCases = cases.filter(c => c.category === "new");
+  const specialCases = cases.filter(c => c.category === "special");
+
   return (
     <div className="min-h-screen flex flex-col bg-[#1A1F2C]">
       <MainNav />
@@ -46,27 +63,33 @@ const CasesPage = () => {
         <CasesHeader />
         
         <div className="container mx-auto px-4 py-8">
-          <CasesTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+          <CasesTabs 
+            cases={cases}
+            handleOpenCase={handleOpenCase}
+          />
           
           <div className="mt-8">
             {activeTab === "popular" && (
               <CasesTabContent 
-                cases={casesData.popularCases} 
-                onOpenCase={(caseItem) => handleOpenCase(caseItem.id, casesData.allCases)} 
+                cases={cases}
+                category="popular"
+                handleOpenCase={handleOpenCase}
               />
             )}
             
             {activeTab === "new" && (
               <CasesTabContent 
-                cases={casesData.newCases} 
-                onOpenCase={(caseItem) => handleOpenCase(caseItem.id, casesData.allCases)} 
+                cases={cases}
+                category="new"
+                handleOpenCase={handleOpenCase}
               />
             )}
             
             {activeTab === "special" && (
               <CasesTabContent 
-                cases={casesData.specialCases} 
-                onOpenCase={(caseItem) => handleOpenCase(caseItem.id, casesData.allCases)} 
+                cases={cases}
+                category="special"
+                handleOpenCase={handleOpenCase}
               />
             )}
           </div>

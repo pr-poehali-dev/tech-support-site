@@ -10,6 +10,11 @@ interface CasesTabsProps {
 }
 
 export function CasesTabs({ cases, handleOpenCase }: CasesTabsProps) {
+  // Проверяем, что cases - это массив и не undefined
+  if (!cases || !Array.isArray(cases)) {
+    return <div className="text-center py-8 text-gray-400">Ошибка загрузки кейсов</div>;
+  }
+
   return (
     <Tabs defaultValue="popular" className="w-full">
       <TabsList className="mb-8 bg-[#222632] border-b border-[#333]">
