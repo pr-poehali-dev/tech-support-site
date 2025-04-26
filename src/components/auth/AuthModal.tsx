@@ -10,8 +10,8 @@ import { useToast } from "@/components/ui/use-toast";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (username: string, password: string) => void;
-  onRegister: (username: string, email: string, password: string) => void;
+  onLogin: (username: string, password: string) => { success: boolean; message: string };
+  onRegister: (username: string, email: string, password: string) => { success: boolean; message: string };
 }
 
 export function AuthModal({ isOpen, onClose, onLogin, onRegister }: AuthModalProps) {
@@ -40,7 +40,22 @@ export function AuthModal({ isOpen, onClose, onLogin, onRegister }: AuthModalPro
       return;
     }
     
-    onLogin(loginUsername, loginPassword);
+    const result = onLogin(loginUsername, loginPassword);
+    
+    if (result.success) {
+      toast({
+        title: "Успех",
+        description: result.message
+      });
+      setLoginUsername('');
+      setLoginPassword('');
+    } else {
+      toast({
+        title: "Ошибка",
+        description: result.message,
+        variant: "destructive"
+      });
+    }
   };
   
   const handleRegister = (e: React.FormEvent) => {
@@ -64,7 +79,24 @@ export function AuthModal({ isOpen, onClose, onLogin, onRegister }: AuthModalPro
       return;
     }
     
-    onRegister(registerUsername, registerEmail, registerPassword);
+    const result = onRegister(registerUsername, registerEmail, registerPassword);
+    
+    if (result.success) {
+      toast({
+        title: "Успех",
+        description: result.message
+      });
+      setRegisterUsername('');
+      setRegisterEmail('');
+      setRegisterPassword('');
+      setConfirmPassword('');
+    } else {
+      toast({
+        title: "Ошибка",
+        description: result.message,
+        variant: "destructive"
+      });
+    }
   };
   
   return (

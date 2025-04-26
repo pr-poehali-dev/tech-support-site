@@ -42,13 +42,10 @@ export function useAuth() {
   const login = useCallback((username: string, password: string) => {
     // В реальном приложении здесь был бы запрос к API
     // Для демонстрации создаем нового пользователя или используем существующего
-    const userId = `user_${Date.now()}`;
     
     // Проверяем, есть ли пользователь в localStorage
     const savedUsers = localStorage.getItem('users');
     const users = savedUsers ? JSON.parse(savedUsers) : {};
-    
-    let user;
     
     // Проверяем учетные данные
     const userExists = Object.values(users).some((u: any) => 
@@ -57,9 +54,21 @@ export function useAuth() {
     
     if (userExists) {
       // Находим пользователя
-      user = Object.values(users).find((u: any) => 
+      const foundUser = Object.values(users).find((u: any) => 
         u.username === username && u.password === password
-      );
+      ) as any;
+      
+      // Удаляем пароль из данных пользователя перед сохранением в состоянии
+      const { password: _, ...userWithoutPassword } = foundUser;
+      
+      setCurrentUser(userWithoutPassword);
+      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+      closeAuthModal();
+      
+      return {
+        success: true,
+        message: "Вы успешно вошли в систему"
+      };
     } else {
       // Пользователь не найден, возвращаем ошибку
       return {
@@ -67,18 +76,6 @@ export function useAuth() {
         message: "Неверное имя пользователя или пароль"
       };
     }
-    
-    // Удаляем пароль из данных пользователя перед сохранением в состоянии
-    const { password: _, ...userWithoutPassword } = user as any;
-    
-    setCurrentUser(userWithoutPassword);
-    localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-    closeAuthModal();
-    
-    return {
-      success: true,
-      message: "Вы успешно вошли в систему"
-    };
   }, [closeAuthModal]);
   
   const register = useCallback((username: string, email: string, password: string) => {
@@ -143,7 +140,7 @@ export function useAuth() {
     
     const updatedUser = {
       ...currentUser,
-      inventory: [...currentUser.inventory, item]
+      inventory: [...currentUser.inventory, {...item, id: `${item.id}_${Date.now()}`}] // Уникальный ID для каждого предмета
     };
     
     setCurrentUser(updatedUser);
@@ -153,11 +150,13 @@ export function useAuth() {
     const savedUsers = localStorage.getItem('users');
     if (savedUsers) {
       const users = JSON.parse(savedUsers);
-      users[currentUser.id] = {
-        ...users[currentUser.id],
-        inventory: updatedUser.inventory
-      };
-      localStorage.setItem('users', JSON.stringify(users));
+      if (users[currentUser.id]) {
+        users[currentUser.id] = {
+          ...users[currentUser.id],
+          inventory: updatedUser.inventory
+        };
+        localStorage.setItem('users', JSON.stringify(users));
+      }
     }
   }, [currentUser]);
   
@@ -187,12 +186,14 @@ export function useAuth() {
     const savedUsers = localStorage.getItem('users');
     if (savedUsers) {
       const users = JSON.parse(savedUsers);
-      users[currentUser.id] = {
-        ...users[currentUser.id],
-        balance: updatedUser.balance,
-        inventory: updatedUser.inventory
-      };
-      localStorage.setItem('users', JSON.stringify(users));
+      if (users[currentUser.id]) {
+        users[currentUser.id] = {
+          ...users[currentUser.id],
+          balance: updatedUser.balance,
+          inventory: updatedUser.inventory
+        };
+        localStorage.setItem('users', JSON.stringify(users));
+      }
     }
     
     return true;
@@ -213,11 +214,13 @@ export function useAuth() {
     const savedUsers = localStorage.getItem('users');
     if (savedUsers) {
       const users = JSON.parse(savedUsers);
-      users[currentUser.id] = {
-        ...users[currentUser.id],
-        balance: updatedUser.balance
-      };
-      localStorage.setItem('users', JSON.stringify(users));
+      if (users[currentUser.id]) {
+        users[currentUser.id] = {
+          ...users[currentUser.id],
+          balance: updatedUser.balance
+        };
+        localStorage.setItem('users', JSON.stringify(users));
+      }
     }
     
     return true;

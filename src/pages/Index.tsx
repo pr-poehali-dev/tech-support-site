@@ -1,11 +1,21 @@
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MainNav } from "@/components/MainNav";
 import { GameCard } from "@/components/GameCard";
 import { Footer } from "@/components/Footer";
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  const handleStartGameClick = () => {
+    navigate('/cases');
+  };
+
+  const handleHowItWorksClick = () => {
+    navigate('/support');
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#1A1F2C]">
       <MainNav />
@@ -15,16 +25,23 @@ const Index = () => {
         <section className="py-16 px-4 md:px-6 text-center">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
-              Испытай удачу на <span className="text-[#9b87f5]">GamingCase</span>
+              Испытай удачу на <span className="text-[#9b87f5]">CSCase</span>
             </h1>
             <p className="text-xl mb-8 text-gray-300">
               Открывай кейсы CS:GO, играй в Crash и Upgrade режимах, выигрывай лучшие скины и получай мгновенную поддержку!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg">
+              <Button 
+                className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg"
+                onClick={handleStartGameClick}
+              >
                 Начать игру
               </Button>
-              <Button variant="outline" className="border-[#9b87f5] text-[#9b87f5] hover:bg-[#9b87f5]/10 px-8 py-6 text-lg">
+              <Button 
+                variant="outline" 
+                className="border-[#9b87f5] text-[#9b87f5] hover:bg-[#9b87f5]/10 px-8 py-6 text-lg"
+                onClick={handleHowItWorksClick}
+              >
                 Как это работает
               </Button>
             </div>

@@ -1,15 +1,16 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { SkinCard } from "@/components/SkinCard";
-import { cn } from "@/lib/utils";
 import { Skin } from "@/types/cases";
+import { useAuth } from "@/hooks/useAuth";
 
 interface CaseOpeningAnimationProps {
   isOpen: boolean;
   onClose: () => void;
   caseName: string;
   caseImage: string;
+  casePrice: number;
   possibleItems: Skin[];
   winningItemIndex?: number; // Optional pre-determined winning item
   onComplete?: (item: Skin) => void;
@@ -20,6 +21,7 @@ export function CaseOpeningAnimation({
   onClose,
   caseName,
   caseImage,
+  casePrice,
   possibleItems,
   winningItemIndex,
   onComplete
@@ -27,78 +29,50 @@ export function CaseOpeningAnimation({
   const [isAnimating, setIsAnimating] = useState(false);
   const [finalItem, setFinalItem] = useState<Skin | null>(null);
   const [animationStarted, setAnimationStarted] = useState(false);
-  const [animationItems, setAnimationItems] = useState<Skin[]>([]);
-  const [winningPosition, setWinningPosition] = useState(0);
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { currentUser, updateBalance, addItemToInventory, openAuthModal } = useAuth();
   
-  // Generate enough items to fill the animation (with repeats)
-  const generateItems = () => {
-    // Create an array with 30-50 items, with the winning item at a specific position
-    const items: Skin[] = [];
-    const totalItems = 50;
+  const generateWinningItem = () => {
+    // Определяем выигрышный предмет
     const winIndex = winningItemIndex !== undefined 
       ? winningItemIndex 
       : Math.floor(Math.random() * possibleItems.length);
     
-    // Winning item should appear near the end of the animation
-    const winningPos = Math.floor(totalItems * 0.8); // 80% through the animation
-    
-    for (let i = 0; i < totalItems; i++) {
-      if (i === winningPos) {
-        items.push(possibleItems[winIndex]);
-      } else {
-        // Random items from the possible items
-        const randomIndex = Math.floor(Math.random() * possibleItems.length);
-        items.push(possibleItems[randomIndex]);
-      }
-    }
-    
-    return { items, winningPosition: winningPos };
+    return possibleItems[winIndex];
   };
 
   const startAnimation = () => {
     if (isAnimating) return;
     
+    // Проверяем, вошел ли пользователь
+    if (!currentUser) {
+      openAuthModal();
+      return;
+    }
+    
+    // Проверяем, достаточно ли у пользователя баланса
+    if (currentUser.balance < casePrice) {
+      alert('Недостаточно средств на балансе');
+      return;
+    }
+    
+    // Списываем стоимость кейса с баланса
+    updateBalance(-casePrice);
+    
     setAnimationStarted(true);
     setIsAnimating(true);
     setFinalItem(null);
     
-    const { items, winningPosition } = generateItems();
-    setAnimationItems(items);
-    setWinningPosition(winningPosition);
-    
-    const winner = items[winningPosition];
-    
-    if (sliderRef.current && containerRef.current) {
-      // Получаем ширину контейнера
-      const containerWidth = containerRef.current.clientWidth;
+    // Простая анимация без прокрутки
+    setTimeout(() => {
+      const winningItem = generateWinningItem();
+      setFinalItem(winningItem);
+      setIsAnimating(false);
       
-      // Установка начальной позиции (все элементы справа)
-      sliderRef.current.style.transition = 'none';
-      sliderRef.current.style.transform = 'translateX(' + containerWidth + 'px)';
+      // Добавляем предмет в инвентарь
+      addItemToInventory(winningItem);
       
-      // Force a reflow
-      void sliderRef.current.offsetWidth;
-      
-      // Рассчитываем ширину одного элемента
-      const itemWidth = 160; // Ширина каждого элемента + отступы
-      
-      // Рассчитываем целевую позицию (выигрышный элемент должен остановиться в центре)
-      const totalDistance = containerWidth + (items.length * itemWidth);
-      const targetPosition = -((winningPosition * itemWidth) - (containerWidth / 2) + (itemWidth / 2));
-      
-      // Запускаем анимацию
-      sliderRef.current.style.transition = 'transform 5s cubic-bezier(0.15, 0.41, 0.23, 0.97)';
-      sliderRef.current.style.transform = `translateX(${targetPosition}px)`;
-      
-      // Устанавливаем финальный предмет после завершения анимации
-      setTimeout(() => {
-        setIsAnimating(false);
-        setFinalItem(winner);
-        if (onComplete) onComplete(winner);
-      }, 5000);
-    }
+      if (onComplete) onComplete(winningItem);
+    }, 2000);
   };
 
   // Reset when modal opens
@@ -118,7 +92,7 @@ export function CaseOpeningAnimation({
         <div className="p-4 border-b border-gray-700">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold text-white">Открытие кейса: {caseName}</h2>
-            {finalItem && (
+            {!isAnimating && (
               <Button variant="ghost" onClick={onClose} className="text-gray-400 hover:text-white">
                 ✕
               </Button>
@@ -134,31 +108,21 @@ export function CaseOpeningAnimation({
                 className="bg-gradient-to-r from-[#9b87f5] to-[#7E69AB] hover:opacity-90 text-white px-8 py-6 text-lg"
                 onClick={startAnimation}
               >
-                Открыть кейс
+                Открыть кейс за {casePrice.toLocaleString('ru-RU')} ₽
               </Button>
             </div>
           ) : (
-            <div className="relative h-64 overflow-hidden" ref={containerRef}>
-              {/* Центральный маркер */}
-              <div className="absolute top-0 left-1/2 h-full w-0.5 bg-[#9b87f5] z-10" />
-              
-              {/* Слайдер с предметами */}
-              <div 
-                ref={sliderRef} 
-                className="flex items-center absolute left-0 top-1/2 -translate-y-1/2 will-change-transform"
-              >
-                {animationItems.map((item, index) => (
-                  <div 
-                    key={`${item.id}-${index}`} 
-                    className={cn(
-                      "mx-2 flex-shrink-0 w-36",
-                      index === winningPosition && "scale-110 z-10"
-                    )}
-                  >
-                    <SkinCard {...item} />
-                  </div>
-                ))}
-              </div>
+            <div className="relative h-64">
+              {!finalItem ? (
+                // Альтернативная анимация - пульсирующий кейс с вращением
+                <div className="flex justify-center items-center h-full">
+                  <img 
+                    src={caseImage} 
+                    alt={caseName} 
+                    className="w-40 h-40 object-contain animate-spin-slow animate-pulse" 
+                  />
+                </div>
+              ) : null}
             </div>
           )}
           

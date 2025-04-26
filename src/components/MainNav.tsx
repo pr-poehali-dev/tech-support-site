@@ -1,149 +1,82 @@
 
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Button } from './ui/button';
-import { UserProfile } from './user/UserProfile';
-import { AuthModal } from './auth/AuthModal';
-import { InventoryModal } from './inventory/InventoryModal';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/components/ui/use-toast';
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 export function MainNav() {
-  const location = useLocation();
-  const { toast } = useToast();
-  const {
-    currentUser,
-    isAuthenticated,
-    isAuthModalOpen,
-    isInventoryModalOpen,
-    openAuthModal,
-    closeAuthModal,
-    openInventoryModal,
-    closeInventoryModal,
-    register,
-    login,
-    logout,
-    sellItem
+  const { 
+    currentUser, 
+    openAuthModal, 
+    logout, 
+    openInventoryModal 
   } = useAuth();
   
-  const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
-  
-  const handleLogin = (username: string, password: string) => {
-    try {
-      login(username, password);
-      toast({
-        title: "Успешный вход",
-        description: "Вы успешно вошли в систему"
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        toast({
-          title: "Ошибка входа",
-          description: error.message,
-          variant: "destructive"
-        });
-      }
-    }
-  };
-  
-  const handleRegister = (username: string, email: string, password: string) => {
-    try {
-      register(username, email, password);
-      toast({
-        title: "Успешная регистрация",
-        description: "Вы успешно зарегистрировались и вошли в систему"
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        toast({
-          title: "Ошибка регистрации",
-          description: error.message,
-          variant: "destructive"
-        });
-      }
-    }
-  };
-  
-  const handleLogout = () => {
-    logout();
-    toast({
-      title: "Выход из системы",
-      description: "Вы успешно вышли из системы"
-    });
-  };
-  
   return (
-    <header className="bg-[#1A1F2C] border-b border-gray-800 py-4">
-      <div className="container flex justify-between items-center">
-        <div className="flex items-center space-x-8">
-          <Link to="/" className="text-2xl font-bold text-white">
-            CS<span className="text-purple-400">Case</span>
-          </Link>
+    <header className="bg-[#1A1F2C] border-b border-gray-800 sticky top-0 z-50">
+      <div className="container mx-auto px-4">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center mr-6">
+              <span className="text-2xl font-bold text-[#9b87f5]">CSCase</span>
+            </Link>
+            
+            <nav className="hidden md:flex space-x-6">
+              <Link to="/cases" className="text-gray-300 hover:text-white transition-colors">
+                Кейсы CS:GO
+              </Link>
+              <Link to="/crash" className="text-gray-300 hover:text-white transition-colors">
+                Crash
+              </Link>
+              <Link to="/upgrade" className="text-gray-300 hover:text-white transition-colors">
+                Upgrade
+              </Link>
+              <Link to="/support" className="text-gray-300 hover:text-white transition-colors">
+                Поддержка
+              </Link>
+            </nav>
+          </div>
           
-          <nav className="hidden md:flex space-x-6">
-            <Link 
-              to="/cases" 
-              className={`${location.pathname === '/cases' ? 'text-purple-400' : 'text-gray-300 hover:text-white'} transition-colors`}
-            >
-              Кейсы CS:GO
-            </Link>
-            <Link 
-              to="/crash" 
-              className={`${location.pathname === '/crash' ? 'text-purple-400' : 'text-gray-300 hover:text-white'} transition-colors`}
-            >
-              Crash
-            </Link>
-            <Link 
-              to="/upgrade" 
-              className={`${location.pathname === '/upgrade' ? 'text-purple-400' : 'text-gray-300 hover:text-white'} transition-colors`}
-            >
-              Upgrade
-            </Link>
-            <Link 
-              to="/support" 
-              className={`${location.pathname === '/support' ? 'text-purple-400' : 'text-gray-300 hover:text-white'} transition-colors`}
-            >
-              Поддержка
-            </Link>
-          </nav>
-        </div>
-        
-        <div>
-          {isAuthenticated && currentUser ? (
-            <UserProfile 
-              user={currentUser}
-              onLogout={handleLogout}
-              onViewInventory={openInventoryModal}
-              onViewBalance={() => setIsBalanceModalOpen(true)}
-            />
-          ) : (
-            <Button 
-              onClick={openAuthModal}
-              className="bg-gradient-to-r from-[#9b87f5] to-[#7E69AB] hover:opacity-90"
-            >
-              Войти
-            </Button>
-          )}
+          <div className="flex items-center space-x-4">
+            {currentUser ? (
+              <>
+                <div className="hidden md:flex items-center text-white bg-[#222632] rounded-lg px-4 py-2">
+                  <span className="font-bold">{currentUser.balance.toLocaleString('ru-RU')} ₽</span>
+                </div>
+                
+                <Button 
+                  variant="outline"
+                  className="border-[#9b87f5] text-white hover:bg-[#9b87f5]/10"
+                  onClick={openInventoryModal}
+                >
+                  Инвентарь
+                </Button>
+                
+                <div className="relative group">
+                  <Button variant="ghost" className="text-white">
+                    {currentUser.username}
+                  </Button>
+                  
+                  <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-[#222632] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                    <button 
+                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#1A1F2C] w-full text-left"
+                      onClick={logout}
+                    >
+                      Выйти
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <Button 
+                className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white"
+                onClick={openAuthModal}
+              >
+                Войти
+              </Button>
+            )}
+          </div>
         </div>
       </div>
-      
-      {/* Auth Modal */}
-      <AuthModal 
-        isOpen={isAuthModalOpen}
-        onClose={closeAuthModal}
-        onLogin={handleLogin}
-        onRegister={handleRegister}
-      />
-      
-      {/* Inventory Modal */}
-      {currentUser && (
-        <InventoryModal 
-          isOpen={isInventoryModalOpen}
-          onClose={closeInventoryModal}
-          user={currentUser}
-          onSellItem={sellItem}
-        />
-      )}
     </header>
   );
 }
