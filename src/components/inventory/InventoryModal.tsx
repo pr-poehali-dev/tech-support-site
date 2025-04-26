@@ -10,13 +10,29 @@ import { useToast } from "@/components/ui/use-toast";
 interface InventoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: User;
+  user: User | null;
   onSellItem: (item: Skin) => void;
 }
 
 export function InventoryModal({ isOpen, onClose, user, onSellItem }: InventoryModalProps) {
   const [selectedTab, setSelectedTab] = useState('all');
   const { toast } = useToast();
+  
+  // Проверка на null для user
+  if (!user) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-4xl bg-[#1A1F2C] text-white border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Инвентарь</DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-12 text-gray-400">
+            Для просмотра инвентаря необходимо авторизоваться
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
   
   const handleSellItem = (item: Skin) => {
     onSellItem(item);
@@ -30,21 +46,24 @@ export function InventoryModal({ isOpen, onClose, user, onSellItem }: InventoryM
     });
   };
   
+  // Безопасный доступ к inventory с проверкой на существование
+  const inventory = user.inventory || [];
+  
   // Filter items by rarity
   const filterItems = (rarity?: string) => {
-    if (!rarity || rarity === 'all') return user.inventory;
-    return user.inventory.filter(item => item.rarity === rarity);
+    if (!rarity || rarity === 'all') return inventory;
+    return inventory.filter(item => item.rarity === rarity);
   };
   
   // Group by rarity for count display
   const countByRarity = {
-    all: user.inventory.length,
-    common: user.inventory.filter(i => i.rarity === 'common').length,
-    uncommon: user.inventory.filter(i => i.rarity === 'uncommon').length,
-    rare: user.inventory.filter(i => i.rarity === 'rare').length,
-    mythical: user.inventory.filter(i => i.rarity === 'mythical').length,
-    legendary: user.inventory.filter(i => i.rarity === 'legendary').length,
-    ancient: user.inventory.filter(i => i.rarity === 'ancient').length,
+    all: inventory.length,
+    common: inventory.filter(i => i.rarity === 'common').length,
+    uncommon: inventory.filter(i => i.rarity === 'uncommon').length,
+    rare: inventory.filter(i => i.rarity === 'rare').length,
+    mythical: inventory.filter(i => i.rarity === 'mythical').length,
+    legendary: inventory.filter(i => i.rarity === 'legendary').length,
+    ancient: inventory.filter(i => i.rarity === 'ancient').length,
   };
   
   return (
